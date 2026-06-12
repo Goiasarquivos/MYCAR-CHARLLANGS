@@ -1,0 +1,298 @@
+<div th:replace="~{compartilhado/topo :: topo}"></div>
+
+<div class="container-fluid">
+
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Serviços e Ordem de Serviço</h1>
+        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" data-toggle="modal" data-target="#modalNovoServico">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Novo Serviço
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Lista de Serviços</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>#ID</th>
+                            <th>Data</th>
+                            <th>Veículo</th>
+                            <th>Cliente</th>
+                            <th>Status</th>
+                            <th>Mecânico</th> 
+                            <th>Total (R$)</th>
+                            <th class="text-center" style="width: 150px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="servico : ${servicos}">
+                            <td th:text="${servico.id}"></td>
+                            <td th:text="${#dates.format(servico.dataEntrada, 'dd/MM/yyyy HH:mm')}"></td>
+                            <td>
+                                <span th:text="${servico.veiculo.modelo}"></span>
+                                <small class="d-block text-muted" th:text="${servico.veiculo.placa}"></small>
+                            </td>
+                            <td th:text="${servico.veiculo.cliente.nome}"></td>
+                            <td>
+                                <span class="badge badge-warning" th:if="${servico.status == 'Pendente'}" th:text="${servico.status}"></span>
+                                <span class="badge badge-success" th:if="${servico.status == 'Concluido'}" th:text="${servico.status}"></span>
+                                <span class="badge badge-primary" th:if="${servico.status == 'Em Andamento'}" th:text="${servico.status}"></span>
+                                <span class="badge badge-info" th:if="${servico.status == 'Aguardando Peças'}" th:text="${servico.status}"></span>
+                            </td>
+                            
+                            <td>
+                                <span th:text="${servico.mecanico != null ? servico.mecanico.nome : '-'}"></span>
+                            </td>
+                            
+                            <td th:text="${'R$ ' + #numbers.formatDecimal(servico.valorTotal, 1, 'POINT', 2, 'COMMA')}"></td>
+                            
+                            <td class="text-center">
+                                <a th:href="@{/servicos/imprimir/{id}(id=${servico.id})}" target="_blank" class="btn btn-info btn-circle btn-sm" title="Imprimir OS">
+                                    <i class="fas fa-print"></i>
+                                </a>
+                                <a th:href="'https://wa.me/55' + ${#strings.replace(#strings.replace(#strings.replace(#strings.replace(servico.veiculo.cliente.telefone, '(', ''), ')', ''), '-', ''), ' ', '')} + '?text=Olá ' + ${servico.veiculo.cliente.nome} + ', segue o resumo do serviço...' " 
+                                   target="_blank" 
+                                   class="btn btn-success btn-circle btn-sm" 
+                                   title="Enviar no WhatsApp">
+                                    <i class="fab fa-whatsapp"></i>
+                                </a>
+                                <a th:href="@{/servicos/editar/{id}(id=${servico.id})}" class="btn btn-warning btn-circle btn-sm">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNovoServico" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Novo Serviço</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            
+            <form th:action="@{/servicos/salvar}" method="POST" th:object="${novoServico}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label for="veiculo">Veículo *</label>
+                            <select class="form-control" th:field="*{veiculo}" required>
+                                <option value="">Selecione um veículo...</option>
+                                <option th:each="v : ${listaVeiculos}" th:value="${v.id}" th:text="${v.modelo + ' - ' + v.placa}"></option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 form-group">
+                            <label for="funcionario">Funcionário Principal *</label>
+                            <select class="form-control" th:field="*{mecanico}" required>
+                                <option value="">Selecione um funcionário...</option>
+                                <option th:each="f : ${listaFuncionarios}" th:value="${f.id}" th:text="${f.nome}"></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descricao">Descrição *</label>
+                        <input type="text" class="form-control" th:field="*{descricao}" placeholder="Descrição do serviço" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label for="status">Status</label>
+                            <select class="form-control" th:field="*{status}">
+                                <option value="Pendente">Pendente</option>
+                                <option value="Em Andamento">Em Andamento</option>
+                                <option value="Aguardando Peças">Aguardando Peças</option>
+                                <option value="Concluido">Concluído</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="maoDeObra">Valor Mão de Obra (R$)</label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="valorMaoDeObra" 
+                                   required 
+                                   th:field="*{valorMaoDeObra}" 
+                                   placeholder="0,00"
+                                   onkeyup="mascaraMoeda(this); calcularTotal()">
+                        </div>
+                    </div>
+
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="font-weight-bold">Peças Utilizadas</h6>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="adicionarLinhaPeca()">
+                            <i class="fas fa-plus"></i> Adicionar Peça
+                        </button>
+                    </div>
+
+                    <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                        <table class="table table-sm table-borderless" id="tabelaPecas">
+                            <thead>
+                                <tr class="text-muted small">
+                                    <th width="50%">Peça</th>
+                                    <th width="20%">Qtd</th>
+                                    <th width="20%">Valor Un.</th>
+                                    <th width="10%"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaPecasBody">
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div style="background-color: #f8f9fc; border-radius: 5px; padding: 15px; margin-top: 20px;">
+                        <div class="d-flex justify-content-between">
+                            <span>Peças:</span>
+                            <span id="displayTotalPecas">R$ 0,00</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Mão de Obra:</span>
+                            <span id="displayTotalMaoDeObra">R$ 0,00</span>
+                        </div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between font-weight-bold text-dark" style="font-size: 1.2em;">
+                            <span>Total:</span>
+                            <span id="displayTotalGeral">R$ 0,00</span>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-primary" type="submit">Criar Serviço</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{compartilhado/rodape :: rodape}"></div>
+
+<script th:inline="javascript">
+    /* Captura a lista de peças do Java */
+    var pecasDisponiveis = /*[[${listaPecas}]]*/ []; 
+    var contadorLinhas = 0;
+
+    // 1. Função da Máscara de Moeda (Formata enquanto digita)
+    function mascaraMoeda(i) {
+        var v = i.value.replace(/\D/g,'');
+        v = (v/100).toFixed(2) + '';
+        v = v.replace(".", ",");
+        v = v.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,");
+        v = v.replace(/(\d)(\d{3}),/g, "$1.$2,");
+        i.value = v;
+    }
+
+    // 2. Função Auxiliar: Converte "1.500,00" para 1500.00 (para somar)
+    function converterMoedaParaFloat(valorString) {
+        if (!valorString) return 0.0;
+        // Remove pontos de milhar e troca vírgula por ponto
+        var limpo = valorString.replace(/\./g, '').replace(',', '.');
+        return parseFloat(limpo) || 0.0;
+    }
+
+    // 3. Adiciona Linha na Tabela de Peças
+    function adicionarLinhaPeca() {
+        var tbody = document.getElementById('listaPecasBody');
+        var index = contadorLinhas++; 
+
+        var options = '<option value="">Selecione...</option>';
+        if (pecasDisponiveis && pecasDisponiveis.length > 0) {
+            pecasDisponiveis.forEach(function(peca) {
+                // Formata o preço com vírgula para exibir no select
+                options += `<option value="${peca.id}" data-preco="${peca.precoVenda}">${peca.nome}</option>`;
+            });
+        } else {
+            options += '<option value="">Sem peças cadastradas</option>';
+        }
+
+        var tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>
+                <select class="form-control form-control-sm peca-select" 
+                        name="pecasUtilizadas[${index}].peca.id" 
+                        onchange="atualizarPrecoLinha(this); calcularTotal()" required>
+                    ${options}
+                </select>
+            </td>
+            <td>
+                <input type="number" class="form-control form-control-sm qtd-input" 
+                       name="pecasUtilizadas[${index}].quantidade" 
+                       value="1" min="1" 
+                       onchange="calcularTotal()" onkeyup="calcularTotal()" required>
+            </td>
+            <td>
+                <input type="text" class="form-control form-control-sm valor-input" 
+                       readonly value="0,00">
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-danger btn-sm btn-circle" onclick="removerLinha(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(tr);
+    }
+
+    function removerLinha(btn) {
+        var row = btn.parentNode.parentNode;
+        row.parentNode.removeChild(row);
+        calcularTotal();
+    }
+
+    function atualizarPrecoLinha(selectElement) {
+        var option = selectElement.options[selectElement.selectedIndex];
+        var preco = option.getAttribute('data-preco');
+        var row = selectElement.closest('tr');
+        var valorInput = row.querySelector('.valor-input');
+        
+        // Exibe o preço formatado com vírgula
+        if(preco) {
+             var precoFloat = parseFloat(preco);
+             valorInput.value = precoFloat.toLocaleString('pt-BR', {minimumFractionDigits: 2});
+        } else {
+             valorInput.value = "0,00";
+        }
+    }
+
+    // 4. Calcula Total Geral (Corrigido para ler texto com vírgula)
+    function calcularTotal() {
+        var totalPecas = 0;
+        var rows = document.querySelectorAll('#listaPecasBody tr');
+        
+        rows.forEach(function(row) {
+            // Usa o conversor para ler o valor unitário da peça (que agora tem vírgula)
+            var valorUnitario = converterMoedaParaFloat(row.querySelector('.valor-input').value);
+            var quantidade = parseFloat(row.querySelector('.qtd-input').value) || 0;
+            totalPecas += (valorUnitario * quantidade);
+        });
+
+        // Usa o conversor para ler a Mão de Obra (que agora tem máscara e vírgula)
+        var maoDeObraString = document.getElementById('valorMaoDeObra').value;
+        var maoDeObra = converterMoedaParaFloat(maoDeObraString);
+
+        var totalGeral = totalPecas + maoDeObra;
+
+        // Atualiza os Labels com formato R$
+        document.getElementById('displayTotalPecas').innerText = formatarMoeda(totalPecas);
+        document.getElementById('displayTotalMaoDeObra').innerText = formatarMoeda(maoDeObra);
+        document.getElementById('displayTotalGeral').innerText = formatarMoeda(totalGeral);
+    }
+
+    function formatarMoeda(valor) {
+        return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+</script>

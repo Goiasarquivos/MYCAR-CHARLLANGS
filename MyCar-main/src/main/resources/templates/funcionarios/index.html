@@ -1,0 +1,146 @@
+<div th:replace="compartilhado/topo"></div>
+
+
+             
+                <div class="container-fluid">
+
+                    <!-- Page Heading -->
+                    <h1 class="h3 mb-2 text-gray-800">Funcionarios</h1>
+                    <div th:if="${mensagemSucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+                    <strong th:text="${mensagemSucesso}"></strong>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <div th:if="${mensagemErro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <strong th:text="${mensagemErro}"></strong>
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                    <p class="mb-4">Aqui está a tabelas dos Funcionarios<a target="_blank"></a>
+                            </p>
+
+                    <!-- DataTales Example -->
+                    <div class="card shadow mb-4">
+                        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                            <h6 class="m-0 font-weight-bold text-primary">Funcio Cadastrados</h6>
+                                <button class="btn btn-primary" style="margin-right: 20px;" data-toggle="modal" data-target="#modalNovoFuncionario">Adicionar</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Nome</th>
+                                            <th>CPF</th>
+                                            <th>Cargo</th>
+                                            <th>Salario Bruto</th>
+                                            <th>Comissão(%)</th>
+                                            <th>Alterar</th>
+                                            <th>Excluir</th>
+                                        </tr>
+                                    </thead>
+                        
+                                    <tbody>
+                                        <tr th:each="funcionario : ${funcionarios}">
+                                            <td th:text="${funcionario.id}"></td>
+                                            <td th:text="${funcionario.nome}"></td>
+                                            <td th:text="${funcionario.cpf}"></td> 
+                                            <td th:text="${funcionario.cargo}"></td>
+                                            <td th:text="'R$ ' + ${#numbers.formatDecimal(funcionario.salarioBase, 1, 'POINT', 2, 'COMMA')}"></td> 
+                                            <td th:text="${funcionario.percentualComissao}"></td>     
+                                            <td style="white-space: nowrap; width: 1%;"><a th:href="@{/funcionarios/editar/{id}(id=${funcionario.id})}" class="btn btn-warning">
+                                             Alterar </a>
+                                            </td>
+                                            <td style="white-space: nowrap; width: 1%;">
+                                                <a th:href="@{/funcionarios/{id}/excluir(id=${funcionario.id})}"
+                                                class="btn btn-danger">Excluir</a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <!-- /.container-fluid -->
+                  <div class="modal fade" id="modalNovoFuncionario" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel" th:text="${funcionario.id == null ? 'Novo Funcionário' : 'Editar Funcionário'}">Dados</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <form th:action="@{/funcionario/salvar}" method="post" th:object="${funcionario}">
+                    
+                    <input type="hidden" th:field="*{id}">
+
+                    <div class="form-group">
+                        <label>Nome</label>
+                        <input type="text" class="form-control" th:field="*{nome}" required maxlength="50" 
+                               placeholder="Ex: JOÃO SILVA"
+                               oninput="this.value = this.value.toUpperCase().replace(/[^A-Z\u00C0-\u00FF ]/g, '').replace(/^\s+/, '')">
+                    </div>
+
+                    <div class="form-group">
+                        <label>CPF</label>
+                        <input type="text" class="form-control" th:field="*{cpf}" required maxlength="14" 
+                               placeholder="000.000.000-00" oninput="mascaraCPF(this)">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Cargo</label>
+                        <input type="text" class="form-control" th:field="*{cargo}" required 
+                               placeholder="Ex: MECANICO"
+                               oninput="this.value = this.value.toUpperCase().replace(/^\s+/, '')">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Salário Bruto</label>
+                        <input type="text" class="form-control" th:field="*{salarioBase}" maxlength="8" 
+                               placeholder="2500.00"
+                               oninput="this.value = this.value.replace(/[^0-9.]/g, '')">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Comissão (%)</label>
+                        <input type="number" class="form-control" th:field="*{percentualComissao}" required 
+                               placeholder="Ex: 5.5" step="0.1" min="0" max="100">
+                    </div>
+
+                    <div class="modal-footer">
+                        <a href="/funcionarios" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+                <script>
+    function mascaraCPF(i) {
+        var v = i.value;
+        if(isNaN(v[v.length-1])){ // impede entrar outro caractere que não seja número
+           i.value = v.substring(0, v.length-1);
+           return;
+        }
+        
+        i.setAttribute("maxlength", "14");
+        if (v.length == 3 || v.length == 7) i.value += ".";
+        if (v.length == 11) i.value += "-";
+    }
+</script>
+
+<div th:replace="compartilhado/rodape">...</div>
+<script th:if="${(funcionario?.id != null) or (erroNoFormulario == true)}">
+    $(document).ready(function() {
+        $('#modalNovoFuncionario').modal('show');
+    });
+</script>

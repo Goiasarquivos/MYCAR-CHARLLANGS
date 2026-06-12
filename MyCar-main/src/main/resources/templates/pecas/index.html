@@ -1,0 +1,165 @@
+<div th:replace="compartilhado/topo"></div>
+
+<div class="container-fluid">
+
+    <h1 class="h3 mb-2 text-gray-800">Peças</h1>
+    
+    <div th:if="${mensagemSucesso}" class="alert alert-success alert-dismissible fade show">
+        <strong th:text="${mensagemSucesso}"></strong>
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    <div th:if="${mensagemErro}" class="alert alert-danger alert-dismissible fade show">
+        <strong th:text="${mensagemErro}"></strong>
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Estoque de Peças</h6>
+            <button class="btn btn-primary" data-toggle="modal" data-target="#modalPeca">Adicionar</button>
+        </div>
+        <div class="card-body">
+    <div class="table-responsive">
+        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Código</th>
+                    <th>Marca</th>
+                    <th>Preço de Compra</th>
+                    <th>Preço de Venda</th>
+                    <th>Estoque</th>
+                    <th>Alterar</th>
+                    <th>Excluir</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr th:each="peca : ${pecas}">
+                    <td th:text="${peca.id}"></td>
+                    <td th:text="${peca.nome}"></td>
+                    <td th:text="${peca.codigo}"></td>
+                    <td th:text="${peca.marca}"></td>
+                    
+                    <td th:text="'R$ ' + ${#numbers.formatDecimal(peca.precoCompra, 1, 'POINT', 2, 'COMMA')}"></td>
+                    <td th:text="'R$ ' + ${#numbers.formatDecimal(peca.precoVenda, 1, 'POINT', 2, 'COMMA')}"></td>
+                    
+                    <td th:text="${peca.quantidadeEstoque}"></td>
+
+                    <td style="white-space: nowrap; width: 1%;">
+                        <a th:href="@{/pecas/editar/{id}(id=${peca.id})}" class="btn btn-warning">
+                            Alterar
+                        </a>
+                    </td>
+                    
+                    <td style="white-space: nowrap; width: 1%;">
+                        <a th:href="@{/pecas/{id}/excluir(id=${peca.id})}" 
+                           class="btn btn-danger"
+                           onclick="return confirm('Tem certeza que deseja excluir?');">
+                           Excluir
+                        </a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+        </div>
+    </div>
+
+</div>
+
+<div class="modal fade" id="modalPeca" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" th:text="${peca.id == null ? 'Nova Peça' : 'Editar Peça'}">Peça</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <form th:action="@{/peca/salvar}" method="post" th:object="${peca}">
+                    
+                    <input type="hidden" th:field="*{id}">
+
+                    <div class="form-group">
+                        <label>Nome</label>
+                        <input type="text" class="form-control" th:field="*{nome}" required maxlength="50"
+                               oninput="this.value = this.value.toUpperCase()">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Código</label>
+                        <input type="text" class="form-control" th:field="*{codigo}" required maxlength="20">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Marca</label>
+                        <input type="text" class="form-control" th:field="*{marca}" required maxlength="30">
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Preço Compra (R$)</label>
+                                <input type="text" class="form-control" 
+                                       th:field="*{precoCompra}" 
+                                       required
+                                       placeholder="0,00"
+                                       onkeyup="mascaraMoeda(this)">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Preço Venda (R$)</label>
+                                <input type="text" class="form-control" 
+                                       th:field="*{precoVenda}" 
+                                       required
+                                       placeholder="0,00"
+                                       onkeyup="mascaraMoeda(this)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Estoque (Qtd)</label>
+                        <input type="number" class="form-control" th:field="*{quantidadeEstoque}" required min="0">
+                    </div>
+
+                    <div class="modal-footer">
+                        <a href="/pecas" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="compartilhado/rodape">...</div>
+
+<script>
+    // 1. Script para formatar moeda enquanto digita
+    function mascaraMoeda(i) {
+        var v = i.value.replace(/\D/g,'');
+        v = (v/100).toFixed(2) + '';
+        v = v.replace(".", ",");
+        v = v.replace(/(\d)(\d{3})(\d{3}),/g, "$1.$2.$3,");
+        v = v.replace(/(\d)(\d{3}),/g, "$1.$2,");
+        i.value = v;
+    }
+
+    // 2. Script para abrir o modal automaticamente se estiver editando ou com erro
+    $(document).ready(function() {
+        // Verifica se o ID da peça existe (Edição) OU se tem erro no form
+        var idPeca = "[[${peca.id}]]"; 
+        var erro = "[[${erroNoFormulario}]]";
+
+        if (idPeca !== "" || erro === "true") {
+            $('#modalPeca').modal('show');
+        }
+    });
+</script>

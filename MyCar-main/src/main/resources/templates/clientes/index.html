@@ -1,0 +1,158 @@
+<div th:replace="~{compartilhado/topo :: topo}"></div>
+
+<div class="container-fluid">
+
+    <h1 class="h3 mb-2 text-gray-800">Clientes</h1>
+    
+    <div th:if="${mensagemSucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong th:text="${mensagemSucesso}"></strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+
+    <div th:if="${mensagemErro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong th:text="${mensagemErro}"></strong>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    
+    <p class="mb-4">Aqui estão cadastrados todos os seus clientes!</p>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Clientes Cadastrados</h6>
+            <button class="btn btn-primary" style="margin-right: 20px;" data-toggle="modal"
+                data-target="#modalNovoCliente">Adicionar</button>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Telefone</th>
+                            <th>Veiculo</th>
+                            <th>Alterar</th>
+                            <th>Excluir</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="c : ${clientes}">
+                            <td th:text="${c.id}" style="white-space: nowrap; width: 5%;"></td>
+                            <td th:text="${c.nome}"></td>
+                            <td th:text="${c.telefone}"></td>
+                            
+                            <td style="white-space: nowrap; width: 1%;">
+                                <div th:each="v : ${c.veiculos}">
+                                    <span th:text="${v.modelo} + ' - ' + ${v.placa}"></span><br>
+                                </div>
+                            </td>
+                            
+                            <td style="white-space: nowrap; width: 1%;">
+                                <a th:href="@{/clientes/editar/{id}(id=${c.id})}" class="btn btn-warning">Alterar</a>
+                            </td>
+
+                            <td style="white-space: nowrap; width: 1%;">
+                                <a th:href="@{/clientes/{id}/excluir(id=${c.id})}"
+                                   onclick="return confirm('Tem certeza que deseja excluir?');"
+                                   class="btn btn-danger">Excluir</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalNovoCliente" tabindex="-1" role="dialog" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalLabel" th:text="${cliente.id == null ? 'Novo Cliente' : 'Editar Cliente'}">Dados do Cliente</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                <form th:action="@{/clientes/salvar}" method="post" th:object="${cliente}">
+                    
+                    <input type="hidden" th:field="*{id}">
+
+                    <h6 class="text-primary font-weight-bold">Dados do Cliente</h6>
+                    
+                    <div class="form-group">
+                        <label>Nome</label>
+                        <input type="text" class="form-control" th:field="*{nome}" required placeholder="Nome do cliente"
+                            oninput="this.value = this.value.replace(/^\s+/, '').replace(/[^a-zA-Z\u00C0-\u00FF ]/g, '')">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Telefone</label>
+                        <input type="text" class="form-control" th:field="*{telefone}" required maxlength="15"
+                            placeholder="(99) 99999-9999"
+                            oninput="this.value = this.value.replace(/\D/g,'').replace(/^(\d{2})(\d)/,'($1) $2').replace(/(\d)(\d{4})$/,'$1-$2')">
+                        <small class="text-muted">Aceita Celular e Fixo</small>
+                    </div>
+                    
+                    <hr>
+                    
+                    <h6 class="text-primary font-weight-bold">Dados do Veículo Principal</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Modelo</label>
+                                <input type="text" class="form-control" th:field="*{veiculos[0].modelo}" maxlength="15"
+                                    placeholder="Ex:Corsa"
+                                    oninput="this.value=this.value.toUpperCase().replace(/^[ ]+/g,'').replace(/[^A-Z0-9 .]/g,'')">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Placa</label>
+                                <input type="text" class="form-control" th:field="*{veiculos[0].placa}" maxlength="7"
+                                    placeholder="Ex: ABC1D23" pattern="[A-Za-z]{3}[0-9][A-Za-z][0-9]{2}"
+                                    title="Formato da placa: ABC1D23 no Padrão Brasileiro"
+                                    oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '')">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Marca</label>
+                                <input type="text" class="form-control" th:field="*{veiculos[0].marca}" placeholder="Ex:FIAT"
+                                    oninput="this.value = this.value.toUpperCase().replace(/^\s+/, '')">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Ano</label>
+                                <input type="text" class="form-control" th:field="*{veiculos[0].ano}" maxlength="4" placeholder="Ex: 2022"
+                                    oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="modal-footer">
+                        <a href="/clientes" class="btn btn-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{compartilhado/rodape :: rodape}"></div>
+
+<script th:if="${(cliente?.id != null) or (erroNoFormulario == true)}">
+    $(document).ready(function() {
+        $('#modalNovoCliente').modal('show');
+    });
+</script>

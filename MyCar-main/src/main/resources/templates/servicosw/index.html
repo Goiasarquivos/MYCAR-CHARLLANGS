@@ -1,0 +1,172 @@
+<div th:replace="compartilhado/topo"></div>
+
+<div class="container-fluid">
+
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Serviços e Ordem de Serviço</h1>
+        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm" data-toggle="modal" data-target="#modalNovoServico">
+            <i class="fas fa-plus fa-sm text-white-50"></i> Novo Serviço
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Lista de Serviços</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>#ID</th>
+                            <th>Data</th>
+                            <th>Veículo</th>
+                            <th>Cliente</th>
+                            <th>Status</th>
+                            <th>Mecânico</th>
+                            <th>Total (R$)</th>
+                            <th class="text-center" style="width: 150px;">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="servico : ${servicos}">
+                            <td th:text="${servico.id}">1</td>
+                            <td th:text="${#dates.format(servico.dataEntrada, 'dd/MM/yyyy HH:mm')}">01/01/2025</td>
+                            <td>
+                                <span th:text="${servico.veiculo.modelo}">Civic</span>
+                                <small class="d-block text-muted" th:text="${servico.veiculo.placa}">ABC-1234</small>
+                            </td>
+                            <td th:text="${servico.veiculo.cliente.nome}">João Silva</td>
+                            <td>
+                                <span class="badge badge-warning" th:if="${servico.status == 'Pendente'}" th:text="${servico.status}"></span>
+                                <span class="badge badge-success" th:if="${servico.status == 'Concluido'}" th:text="${servico.status}"></span>
+                                <span class="badge badge-primary" th:if="${servico.status == 'Em Andamento'}" th:text="${servico.status}"></span>
+                                <span class="badge badge-info" th:if="${servico.status == 'Aguardando Peças'}" th:text="${servico.status}"></span>
+                            </td>
+                            <td>
+                                <span th:if="${not #lists.isEmpty(servico.mecanicosResponsaveis)}" 
+                                      th:text="${servico.mecanicosResponsaveis[0].mecanico.nome}">Carlos</span>
+                            </td>
+                            <td th:text="${'R$ ' + #numbers.formatDecimal(servico.valorTotal, 1, 'POINT', 2, 'COMMA')}">R$ 300,00</td>
+                            <td class="text-center">
+                                <a th:href="@{/servicos/imprimir/{id}(id=${servico.id})}" target="_blank" class="btn btn-info btn-circle btn-sm" title="Imprimir OS">
+                                    <i class="fas fa-print"></i>
+                                </a>
+                                
+                                <a th:href="'https://wa.me/55' + ${servico.veiculo.cliente.telefone} + '?text=Olá ' + ${servico.veiculo.cliente.nome} + ', segue atualização sobre o serviço do veículo ' + ${servico.veiculo.modelo} + '. Status: ' + ${servico.status} + '. Total: R$ ' + ${servico.valorTotal}" 
+                                   target="_blank" class="btn btn-success btn-circle btn-sm" title="Enviar no WhatsApp">
+                                    <i class="fab fa-whatsapp"></i>
+                                </a>
+
+                                <a th:href="@{/servicos/editar/{id}(id=${servico.id})}" class="btn btn-warning btn-circle btn-sm">
+                                    <i class="fas fa-pen"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modalNovoServico" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Novo Serviço</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            
+            <form th:action="@{/servicos/salvar}" method="POST" th:object="${novoServico}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label for="veiculo">Veículo *</label>
+                            <select class="form-control" th:field="*{veiculo}" required>
+                                <option value="">Selecione um veículo...</option>
+                                <option th:each="v : ${listaVeiculos}" th:value="${v.id}" th:text="${v.modelo + ' - ' + v.placa}"></option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label for="funcionario">Funcionário Principal *</label>
+                            <select class="form-control" th:field="*{mecanico}" required>
+                                <option value="">Selecione um funcionário...</option>
+                                <option th:each="f : ${listaFuncionarios}" th:value="${f.id}" th:text="${f.nome}"></option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descricao">Descrição *</label>
+                        <input type="text" class="form-control" th:field="*{descricao}" placeholder="Descrição do serviço (ex: Troca de óleo)" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 form-group">
+                            <label for="status">Status</label>
+                            <select class="form-control" th:field="*{status}">
+                                <option value="Pendente">Pendente</option>
+                                <option value="Em Andamento">Em Andamento</option>
+                                <option value="Aguardando Peças">Aguardando Peças</option>
+                                <option value="Concluido">Concluído</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 form-group">
+                            <label for="maoDeObra">Valor Mão de Obra (R$)</label>
+                            <input type="number" step="0.01" class="form-control" id="valorMaoDeObra" name="valorMaoDeObraInput" value="0.00" onchange="calcularTotal()">
+                        </div>
+                    </div>
+
+                    <hr>
+                    
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="font-weight-bold">Peças Utilizadas</h6>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="adicionarLinhaPeca()">
+                            <i class="fas fa-plus"></i> Adicionar Peça
+                        </button>
+                    </div>
+
+                    <div class="table-responsive" style="max-height: 200px; overflow-y: auto;">
+                        <table class="table table-sm table-borderless" id="tabelaPecas">
+                            <thead>
+                                <tr class="text-muted small">
+                                    <th width="50%">Peça</th>
+                                    <th width="20%">Qtd</th>
+                                    <th width="20%">Valor Un.</th>
+                                    <th width="10%"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaPecasBody">
+                                </tbody>
+                        </table>
+                    </div>
+
+                    <div style="background-color: #f8f9fc; border-radius: 5px; padding: 15px; margin-top: 20px;">
+                        <div class="d-flex justify-content-between">
+                            <span>Peças:</span>
+                            <span id="displayTotalPecas">R$ 0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Mão de Obra:</span>
+                            <span id="displayTotalMaoDeObra">R$ 0.00</span>
+                        </div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between font-weight-bold text-dark" style="font-size: 1.2em;">
+                            <span>Total:</span>
+                            <span id="displayTotalGeral">R$ 0.00</span>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancelar</button>
+                    <button class="btn btn-primary" type="submit">Criar Serviço</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<div th:replace="compartilhado/rodape"></div>
+

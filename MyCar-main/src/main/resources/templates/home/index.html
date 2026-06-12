@@ -1,0 +1,87 @@
+<div th:replace="~{compartilhado/topo :: topo}"></div>
+
+<div class="container-fluid">
+
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Painel - <span th:text="${nome}"></span></h1>
+    </div>
+
+    <div class="row">
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total de Carros</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${qtdCarros}">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-car fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total de Clientes</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800" th:text="${qtdClientes}">0</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Serviços</div>
+                            <div class="row no-gutters align-items-center">
+                                <div class="col-auto">
+                                    <div class="h5 mb-0 mr-3 font-weight-bold text-gray-800" th:text="${qtdServicos}">0</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <a href="/servicos" class="text-decoration-none">
+                <div class="card bg-primary text-white shadow h-100 py-2" style="cursor: pointer; transition: 0.3s;">
+                    <div class="card-body d-flex align-items-center justify-content-center">
+                        <div class="text-center">
+                            <div class="text-uppercase font-weight-bold mb-1" style="font-size: 0.8rem; opacity: 0.8;">
+                                Ação Rápida
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold">
+                                <i class="fas fa-plus-circle mr-2"></i>Novo Serviço
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+    </div>
+
+    
+
+</div>
+<div th:replace="~{compartilhado/rodape :: rodape}"></div>
